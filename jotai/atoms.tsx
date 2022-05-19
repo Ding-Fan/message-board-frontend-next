@@ -26,7 +26,7 @@ export const asyncMessagesAtom = atomWithRefresh(
         content: item.content,
         sender: item.sender
       }
-    })
+    }).reverse()
 
     console.log('formatted result', formattedResult)
     // await transaction.wait()

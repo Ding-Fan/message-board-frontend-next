@@ -35,44 +35,46 @@ const Home: NextPage = () => {
     }
   }, [contract])
 
-  if (!selectedAddress) {
-    return (
-      <ConnectWallet />
-    )
-  }
-
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
+    <div className="flex min-h-screen flex-col items-center justify-center">
       <Head>
         <title>Message Board</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <h1>
+      <h1 className='w-full text-center text-2xl bg-green-200 py-4'>
         We are using Rinkeby testnet
       </h1>
 
-      <Suspense fallback="Loading...">
-        <main
-          className="flex w-full flex-1 flex-col items-center justify-center px-20 bg-gray-100">
 
-          <SendBox />
+      {
+        !selectedAddress ? (
+          <ConnectWallet />
+        ) : (
+          <Suspense fallback="Loading...">
+            <main
+              className="flex w-full flex-1 flex-col items-center justify-center px-20 bg-gray-100">
 
-          <div
-            className="message-list w-full min-h-[200px] ">
-            {
-              messages && messages.map((item) => {
-                return (
-                  <Message
-                    content={item.content}
-                    sender={item.sender}
-                    key={item.content + Date.now()} />
-                )
-              })
-            }
-          </div>
-        </main>
-      </Suspense>
+              <SendBox />
+
+              <div
+                className="message-list w-full min-h-[200px] ">
+                {
+                  messages && messages.map((item) => {
+                    return (
+                      <Message
+                        content={item.content}
+                        sender={item.sender}
+                        key={item.content + Date.now()} />
+                    )
+                  })
+                }
+              </div>
+            </main>
+          </Suspense>
+        )
+      }
+
     </div>
   )
 }

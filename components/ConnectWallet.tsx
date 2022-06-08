@@ -1,31 +1,87 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ethers } from 'ethers'
+import Web3Modal from "web3modal"
 
-import TokenArtifact from "../contract-info/MessageBoard.json"
+import CMessageBoardTokenArtifact from "../contract-info/MessageBoard.json"
+import CNFTArtifact from "../contract-info/NftCollection.json"
 import { useAtom } from 'jotai'
-import { contractAtom, selectedAddressAtom } from '../jotai/atoms'
+import { CMessageBoardAtom, CNFTAtom, selectedAddressAtom, web3ModalAtom } from '../jotai/atoms'
+import { getFontDefinitionFromNetwork } from 'next/dist/server/font-utils'
+import { getChainData } from '../helpers/utilities'
+import toast from 'react-hot-toast'
 
 type Props = {
 }
 
 const ConnectWallet = (props: Props) => {
 
-  const [contract, setContract] = useAtom(contractAtom)
+  const [CMessageBoard, setCMessageBoard] = useAtom(CMessageBoardAtom)
+  const [CNFT, setCNFT] = useAtom(CNFTAtom)
   const [selectedAddress, setSelectedAddress] = useAtom(selectedAddressAtom)
+  const [web3Modal, setWeb3Modal] = useAtom(web3ModalAtom)
+
+  useEffect(() => {
+
+    // const getNetwork = () => getChainData(chainId).network.toLowerCase()
+
+    const theModal = new Web3Modal({
+      cacheProvider: true,
+      providerOptions: {
+        // walletconnect: {
+        //   package: 'metamask',
+        //   options: {
+        //     infuraId: process.env.NEXT_PUBLIC_INFURA_ID || ""
+        //   }
+        // }
+      }
+    })
+
+    setWeb3Modal(theModal)
+
+    return () => {
+    }
+  }, [])
+
 
   const _initializeEthers = async () => {
+
+    const instance = await web3Modal?.connect()
+
+    console.log('instance', instance)
+
     // We first initialize ethers by creating a provider using window.ethereum
-    const _provider = new ethers.providers.Web3Provider(window.ethereum)
+    const _provider = new ethers.providers.Web3Provider(instance)
+
+    const _signer = _provider.getSigner()
+
+    const _chainId = await _signer.getChainId()
+
+    console.log('chain id', _chainId)
+
+    try {
+      getChainData(_chainId)
+    } catch (error) {
+      toast.error('We are using Rinkeby test network!')
+      setSelectedAddress("")
+      return
+    }
+
 
     // Then, we initialize the contract using that provider and the token's
     // artifact. You can do this same thing with your contracts.
-    const theContract = new ethers.Contract(
-      process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "",
-      TokenArtifact.abi,
+    const theCMessageBoard = new ethers.Contract(
+      process.env.NEXT_PUBLIC_CMESSAGEBOARD_ADDRESS || "",
+      CMessageBoardTokenArtifact.abi,
+      _provider.getSigner(0)
+    )
+    const theCNFT = new ethers.Contract(
+      process.env.NEXT_PUBLIC_CNFT_ADDRESS || "",
+      CNFTArtifact.abi,
       _provider.getSigner(0)
     )
 
-    setContract(theContract)
+    setCMessageBoard(theCMessageBoard)
+    setCNFT(theCNFT)
   }
 
   const _connectWallet = async () => {

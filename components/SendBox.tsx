@@ -1,19 +1,19 @@
 import { useAtom } from 'jotai'
 import React from 'react'
-import { contractAtom, messageAtom } from '../jotai/atoms'
+import { CMessageBoardAtom, messageAtom } from '../jotai/atoms'
 
 type Props = {}
 
 const SendBox = (props: Props) => {
 
   const [message, setMessage] = useAtom(messageAtom)
-  const [contract] = useAtom(contractAtom)
+  const [CMessageBoard] = useAtom(CMessageBoardAtom)
 
   const doSaveMessage = async () => {
-    if (!contract) {
+    if (!CMessageBoard) {
       return
     }
-    const transaction = await contract.saveMessage(message)
+    const transaction = await CMessageBoard.saveMessage(message)
     await transaction.wait()
   }
 
